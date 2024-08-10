@@ -56,7 +56,6 @@ def time_analysis(path):
     output_file_path = "Screening_Time_Analysis.xlsx"
     result_df.to_excel(output_file_path)
 
-
 def answer_analysis(path):
     df = pd.read_excel(path)
     result = df.groupby(['Job Title', 'Question', 'Correct Answer']).size().unstack(fill_value=0)
@@ -68,5 +67,5 @@ def answer_analysis(path):
     # print(final_result)
 
 
-# answer_analysis('Tests/test.xlsx')
+answer_analysis('Tests/test.xlsx')
 time_analysis("Tests/Time Analysis Test.xlsx")
