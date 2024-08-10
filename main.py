@@ -56,7 +56,7 @@ def time_analysis(path):
     output_file_path = "Screening_Time_Analysis.xlsx"
     result_df.to_excel(output_file_path)
 
-def avergae_time_analysis(path):
+def average_time_analysis(path):
     df = pd.read_excel(path)
     
     time_classes = [
@@ -72,7 +72,7 @@ def avergae_time_analysis(path):
     def convert_time_to_hours(time_str):
         if isinstance(time_str, str):
             if 'Pending' in time_str:
-                return 'Screen Pending'
+                return None  # Exclude Pending cases
             if 'Less Than Minute' in time_str:
                 return 1 / 60
             if 'Minute' in time_str:
@@ -87,10 +87,9 @@ def avergae_time_analysis(path):
         return None
     
     df['Time in Hours'] = df['Screening Completed In'].apply(convert_time_to_hours)
+    df = df[df['Time in Hours'].notnull()]
     
     def classify_time(hours):
-        if hours == 'Screen Pending':
-            return hours
         for lower, upper, label in time_classes:
             if lower <= hours < upper:
                 return label
@@ -98,11 +97,12 @@ def avergae_time_analysis(path):
     
     df['Time Class'] = df['Time in Hours'].apply(classify_time)
     df['Under 5 Minutes'] = df['Time in Hours'].apply(lambda x: x < (5 / 60) if isinstance(x, (int, float)) else 0)
+    
     time_class_counts = df['Time Class'].value_counts()
     total_counts = len(df)
     time_class_percentage = (time_class_counts / total_counts) * 100
-    
     under_5_minutes_percentage = df['Under 5 Minutes'].mean() * 100
+    
     time_class_df = time_class_percentage.reset_index()
     time_class_df.columns = ['Time Class', 'Percentage']
     
@@ -127,4 +127,4 @@ def answer_analysis(path):
 
 # answer_analysis('Tests/test.xlsx')
 # time_analysis("Tests/Time Analysis Test.xlsx")
-avergae_time_analysis("Tests/Time Analysis Test.xlsx")
+average_time_analysis("Tests/Time Analysis Test.xlsx")
