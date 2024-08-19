@@ -17,7 +17,7 @@ documents = list(collection.find({
         "jobId": {"$exists": True, "$ne": None},
     }))
 
-print(documents[0])
+# print(documents[0])
 
 def remove_object_ids(data):
     if isinstance(data, dict):
@@ -45,9 +45,7 @@ def time_analysis():
         (48, float('inf'), '>48 hrs')
     ]
     
-    # Convert ObjectId to string and inspect column names
     df = remove_object_ids(df)
-    print(df.columns)  # Print the columns to check the names
     
     df['Time in Hours'] = (df['screeningCompletedAt'] - df['screeningTriggeredOn']).dt.total_seconds() / 3600
     
@@ -73,6 +71,7 @@ def time_analysis():
 
 def average_time_analysis():
     df = pd.DataFrame(documents)
+    df.columns = df.columns.str.lower()
     
     time_classes = [
         (0, 2, '0-2 hrs'),
@@ -84,8 +83,8 @@ def average_time_analysis():
         (48, float('inf'), '>48 hrs')
     ]
     
-    df['Time in Hours'] = (df['screeningCompletedAt'] - df['screeningTriggeredOn']).dt.total_seconds() / 3600
-    df = df[df['Time in Hours'].notnull()]
+    df['time in hours'] = (df['screeningcompletedat'] - df['screeningtriggeredon']).dt.total_seconds() / 3600
+    df = df[df['time in hours'].notnull()]
     
     def classify_time(hours):
         for lower, upper, label in time_classes:
@@ -93,13 +92,13 @@ def average_time_analysis():
                 return label
         return '>48 hrs'
     
-    df['Time Class'] = df['Time in Hours'].apply(classify_time)
-    df['Under 5 Minutes'] = df['Time in Hours'].apply(lambda x: x < (5 / 60))
+    df['time class'] = df['time in hours'].apply(classify_time)
+    df['under 5 minutes'] = df['time in hours'].apply(lambda x: x < (5 / 60))
     
-    time_class_counts = df['Time Class'].value_counts()
+    time_class_counts = df['time class'].value_counts()
     total_counts = len(df)
     time_class_percentage = (time_class_counts / total_counts) * 100
-    under_5_minutes_percentage = df['Under 5 Minutes'].mean() * 100
+    under_5_minutes_percentage = df['under 5 minutes'].mean() * 100
     
     time_class_df = time_class_percentage.reset_index()
     time_class_df.columns = ['Time Class', 'Percentage']
@@ -111,6 +110,7 @@ def average_time_analysis():
     
     combined_df = pd.concat([time_class_df, under_5_minutes_df], ignore_index=True)
     combined_df.to_excel("Avg_Screening_Time_Analysis.xlsx", sheet_name='Time Analysis', index=False)
+
 
 def answer_analysis():
     df = pd.DataFrame(documents)
@@ -129,6 +129,6 @@ def answer_analysis():
     final_result = result[["% Correct", "% Wrong", "% NA"]].reset_index()
     final_result.to_excel('Answer_Analysis.xlsx', index=False)
 
-time_analysis()
+# time_analysis()
 # average_time_analysis()
 # answer_analysis()
